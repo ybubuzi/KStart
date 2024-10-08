@@ -99,11 +99,7 @@ function KStart() {
       },
     ],
     search_method: [
-      {
-        name: "百度",
-        icon: "baidu",
-        url: "https://www.baidu.com/s?wd=%s",
-      },
+      
       {
         name: "必应",
         icon: "bing",
@@ -113,27 +109,23 @@ function KStart() {
         name: "谷歌",
         icon: "google",
         url: "https://www.google.com/search?q=%s",
+      }, 
+      {
+        name: "密塔",
+        icon: "mita",
+        url: "https://metaso.cn/search/8531876507738931200?q=%s"
       },
       {
-        name: "360",
-        icon: "360so",
-        url: "https://www.so.com/s?q=%s",
-      },
-      {
-        name: "搜狗",
-        icon: "sogou",
-        url: "https://www.sogou.com/web?query=%s",
-      },
+        name: "百度",
+        icon: "baidu",
+        url: "https://www.baidu.com/s?wd=%s",
+      }, 
       {
         name: "Felo",
         icon: "felo-search",
         url: "https://felo.ai/?q=%s",
       },
-      {
-        name: "DuckDuckGo",
-        icon: "duckduckgo",
-        url: "https://duckduckgo.com/?q=%s",
-      },
+      
     ],
     motion_reduced_enum: [
       {
@@ -337,7 +329,30 @@ function KStart() {
     },
     submitSearchButton: (e) => {
       e.preventDefault();
-      window.open(data.search_method[data.user_set.search].url.replace("%s", obj.main.input.value));
+      const method = data.search_method[data.user_set.search]
+      const value = obj.main.input.value
+      console.log(data.search_method[data.user_set.search].url,data.user_set.search)
+      if(method.name == "密塔"){
+        fetch('https://metaso.cn/api/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            question:value,mode:"detail",engineType:"",scholarSearchDomain:"all"
+          })
+        }).then(res=>res.json()).then(r=>{
+          if(r.errCode==0){
+            window.open(`https://metaso.cn/search/${r.data.id}?q=${r.data.question}`);
+          }else{
+            alert('错误了，检查密塔接口')
+          }
+        })
+      }else{
+        window.open(method.url.replace("%s", value));
+      }
+      
+      // 
     },
 
     // 右上方的按钮
@@ -464,11 +479,17 @@ function KStart() {
     // 修改搜索方式
     changeSearch: (key) => {
       data.user_set.search = key;
-
-      obj.main.input.placeholder = `使用 ${data.search_method[key].name} 搜索`;
-
-      if (data.search_method[key].icon) {
-        obj.main.select.innerHTML = `<i class="iconfont icon-${data.search_method[key].icon}"></i>`
+      const _ = data.search_method[key]
+      obj.main.input.placeholder = `使用 ${_.name} 搜索`;
+      
+      
+      if (_.icon) {
+        if(_.icon=='mita'){
+          
+          obj.main.select.innerHTML = `<i class="iconfont" style="background-image: url('https://metaso.cn/apple-touch-icon.png');display: inline-block;height: 2.5rem;width: 2.5rem;background-size: cover;"></i>`
+          return
+        }
+        obj.main.select.innerHTML = `<i class="iconfont icon-${_.icon}"></i>`
       }
     },
     // 初始化背景和深色背景模式检测
