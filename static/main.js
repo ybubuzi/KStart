@@ -220,6 +220,9 @@ function KStart() {
     },
 
     createNaviItem: (item, key) => {
+      if (!item) {
+        return;
+      }
       const icon = item.icon
         ? `<i class="${item.icon}"></i>`
         : item.iconUrl
@@ -409,7 +412,9 @@ function KStart() {
           siteID,
           true
         );
-
+        if (!newSiteItem) {
+          return;
+        }
         obj.main.sites.appendChild(newSiteItem);
       }
 
@@ -723,16 +728,20 @@ function KStart() {
       // 用户自定义站点
       if (custom && Array.isArray(custom)) {
         custom.forEach((item) => {
-          obj.main.sites.appendChild(methods.createNaviItem(item));
+          const el = methods.createNaviItem(item);
+          if (el) {
+            obj.main.sites.appendChild(el);
+          }
         });
       }
 
       // 用户选中的预设站点
       if (sites && Array.isArray(sites)) {
         sites.forEach((item) => {
-          obj.main.sites.appendChild(
-            methods.createNaviItem(data.sites[item], item)
-          );
+          const el = methods.createNaviItem(data.sites[item], item);
+          if (el) {
+            obj.main.sites.appendChild(el);
+          }
         });
       } else {
         console.error("这个一般不会触发吧？");
