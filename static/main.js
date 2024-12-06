@@ -39,7 +39,7 @@ function KStart() {
       background_input: ks.select("#custom-background-input"),
       sites: ks.select("[name=sites]"),
       auto_focus: ks.select("[name=auto_focus]"),
-      low_animate: ks.select("[name=low_animate]")
+      low_animate: ks.select("[name=low_animate]"),
     },
     settingBtn: {
       reset: ks.select("#set-reset"),
@@ -48,13 +48,13 @@ function KStart() {
       file: ks.select("#set-file"),
     },
     drawer: {
-      sites: ks.select(".the-drawer .sites")
+      sites: ks.select(".the-drawer .sites"),
     },
 
     // 不渲染的元素
     _internal: {
       link: ks.create("a"),
-      dragFrom: null
+      dragFrom: null,
     },
   };
 
@@ -99,7 +99,6 @@ function KStart() {
       },
     ],
     search_method: [
-      
       {
         name: "必应",
         icon: "bing",
@@ -109,23 +108,22 @@ function KStart() {
         name: "谷歌",
         icon: "google",
         url: "https://www.google.com/search?q=%s",
-      }, 
+      },
       {
         name: "密塔",
         icon: "mita",
-        url: "https://metaso.cn/search/8531876507738931200?q=%s"
+        url: "https://metaso.cn/search/8531876507738931200?q=%s",
       },
       {
         name: "百度",
         icon: "baidu",
         url: "https://www.baidu.com/s?wd=%s",
-      }, 
+      },
       {
         name: "Felo",
         icon: "felo-search",
         url: "https://felo.ai/?q=%s",
       },
-      
     ],
     motion_reduced_enum: [
       {
@@ -170,9 +168,9 @@ function KStart() {
           data.db = e.target.result;
           data.db.createObjectStore("images", { keyPath: "id" });
         };
-      })
+      });
     },
-    getCustomWallpaper: () => (
+    getCustomWallpaper: () =>
       new Promise((resolve, reject) => {
         if (data.custom_background) {
           resolve(data.custom_background);
@@ -191,15 +189,16 @@ function KStart() {
 
         getRequest.onerror = () => {
           reject(new Error(transaction.error));
-        }
-      })
-    ),
+        };
+      }),
 
     // 存储相关
     getStorage: () => {
       const storage = localStorage.getItem("paul-userset");
 
-      return storage ? JSON.parse(localStorage.getItem("paul-userset")) : undefined;
+      return storage
+        ? JSON.parse(localStorage.getItem("paul-userset"))
+        : undefined;
     },
     setStorage: () => {
       localStorage.setItem("paul-userset", JSON.stringify(data.user_set));
@@ -221,7 +220,11 @@ function KStart() {
     },
 
     createNaviItem: (item, key) => {
-      const icon = item.icon ? `<i class="${item.icon}"></i>` : item.name.substr(0, 1);
+      const icon = item.icon
+        ? `<i class="${item.icon}"></i>`
+        : item.iconUrl
+        ? `<img  class="my-nav-btn" src="${item.iconUrl}"></i>`
+        : item.name.substr(0, 1);
       const color = item.color || Math.random().toString(16).substring(-6);
 
       const el = ks.create("a", {
@@ -237,12 +240,10 @@ function KStart() {
             value: "_blank",
           },
         ],
-        html: (
-          `<figure class="navi-icon" style="background: #${color}">
+        html: `<figure class="navi-icon" style="background: #${color}">
               ${icon}
           </figure>
-          <p class="navi-title">${item.name}</p>`
-        )
+          <p class="navi-title">${item.name}</p>`,
       });
 
       data.env === "local" && modifys.initDragNavi(el);
@@ -319,7 +320,8 @@ function KStart() {
   const modifys = {
     // 全局委托，用于隐藏搜索下拉框
     onBodyClick: (ev) => {
-      ev.target.className !== "search-select" && obj.main.search.classList.remove("active");
+      ev.target.className !== "search-select" &&
+        obj.main.search.classList.remove("active");
     },
     // 搜索里面的按钮
     selectSearchButton: () => {
@@ -329,30 +331,40 @@ function KStart() {
     },
     submitSearchButton: (e) => {
       e.preventDefault();
-      const method = data.search_method[data.user_set.search]
-      const value = obj.main.input.value
-      console.log(data.search_method[data.user_set.search].url,data.user_set.search)
-      if(method.name == "密塔"){
-        fetch('https://metaso.cn/api/session', {
-          method: 'POST',
+      const method = data.search_method[data.user_set.search];
+      const value = obj.main.input.value;
+      console.log(
+        data.search_method[data.user_set.search].url,
+        data.user_set.search
+      );
+      if (method.name == "密塔") {
+        fetch("https://metaso.cn/api/session", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            question:value,mode:"detail",engineType:"",scholarSearchDomain:"all"
-          })
-        }).then(res=>res.json()).then(r=>{
-          if(r.errCode==0){
-            window.open(`https://metaso.cn/search/${r.data.id}?q=${r.data.question}`);
-          }else{
-            alert('错误了，检查密塔接口')
-          }
+            question: value,
+            mode: "detail",
+            engineType: "",
+            scholarSearchDomain: "all",
+          }),
         })
-      }else{
+          .then((res) => res.json())
+          .then((r) => {
+            if (r.errCode == 0) {
+              window.open(
+                `https://metaso.cn/search/${r.data.id}?q=${r.data.question}`
+              );
+            } else {
+              alert("错误了，检查密塔接口");
+            }
+          });
+      } else {
         window.open(method.url.replace("%s", value));
       }
-      
-      // 
+
+      //
     },
 
     // 右上方的按钮
@@ -392,7 +404,11 @@ function KStart() {
       else {
         data.user_set.sites.push(siteID);
 
-        const newSiteItem = methods.createNaviItem(data.sites[siteID], siteID, true);
+        const newSiteItem = methods.createNaviItem(
+          data.sites[siteID],
+          siteID,
+          true
+        );
 
         obj.main.sites.appendChild(newSiteItem);
       }
@@ -404,19 +420,29 @@ function KStart() {
     clearButton: () => {
       methods.clearStorage();
 
-      ks.notice("本地设置已清除，刷新页面后将读取默认配置！", { color: "green", time: 5000 });
+      ks.notice("本地设置已清除，刷新页面后将读取默认配置！", {
+        color: "green",
+        time: 5000,
+      });
     },
     inputButton: () => {
       obj.settingBtn.file.click();
     },
     outputButton: () => {
-      const blob = new Blob([JSON.stringify(data.user_set, null, 2)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(data.user_set, null, 2)], {
+        type: "application/json",
+      });
 
       obj._internal.link.href = URL.createObjectURL(blob);
-      obj._internal.link.download = `userset-${parseInt(new Date().getTime() / 1000)}.json`;
+      obj._internal.link.download = `userset-${parseInt(
+        new Date().getTime() / 1000
+      )}.json`;
       obj._internal.link.click();
 
-      ks.notice("设置项已经导出，你可以将它上传到 GitHub 仓库以对外展示", { color: "yellow", time: 5000 });
+      ks.notice("设置项已经导出，你可以将它上传到 GitHub 仓库以对外展示", {
+        color: "yellow",
+        time: 5000,
+      });
     },
     fileInputChange: (e) => {
       const file = e.target.files && e.target.files[0];
@@ -438,9 +464,11 @@ function KStart() {
           data.user_set = json;
           methods.setStorage();
 
-          ks.notice("导入成功，刷新页面后生效！", { color: "green", time: 5000 });
-        }
-        catch (e) {
+          ks.notice("导入成功，刷新页面后生效！", {
+            color: "green",
+            time: 5000,
+          });
+        } catch (e) {
           ks.notice("JSON 文件格式错误，请检查", { color: "red", time: 3000 });
           return;
         }
@@ -461,15 +489,16 @@ function KStart() {
       const toId = to.getAttribute("data-id");
       const set_sites = data.user_set.sites;
 
-      const _fromIdValue = set_sites.indexOf(Number(from.getAttribute("data-id")));
+      const _fromIdValue = set_sites.indexOf(
+        Number(from.getAttribute("data-id"))
+      );
       const _toIdValue = set_sites.indexOf(Number(toId));
 
       set_sites.splice(_toIdValue, 0, set_sites.splice(_fromIdValue, 1)[0]);
 
       if (_fromIdValue > _toIdValue) {
         from.parentElement.insertBefore(from, to);
-      }
-      else {
+      } else {
         from.parentElement.insertBefore(from, to.nextSibling);
       }
 
@@ -479,17 +508,15 @@ function KStart() {
     // 修改搜索方式
     changeSearch: (key) => {
       data.user_set.search = key;
-      const _ = data.search_method[key]
+      const _ = data.search_method[key];
       obj.main.input.placeholder = `使用 ${_.name} 搜索`;
-      
-      
+
       if (_.icon) {
-        if(_.icon=='mita'){
-          
-          obj.main.select.innerHTML = `<i class="iconfont" style="background-image: url('https://metaso.cn/apple-touch-icon.png');display: inline-block;height: 2.5rem;width: 2.5rem;background-size: cover;"></i>`
-          return
+        if (_.icon == "mita") {
+          obj.main.select.innerHTML = `<i class="iconfont" style="background-image: url('https://metaso.cn/apple-touch-icon.png');display: inline-block;height: 2.5rem;width: 2.5rem;background-size: cover;"></i>`;
+          return;
         }
-        obj.main.select.innerHTML = `<i class="iconfont icon-${_.icon}"></i>`
+        obj.main.select.innerHTML = `<i class="iconfont icon-${_.icon}"></i>`;
       }
     },
     // 初始化背景和深色背景模式检测
@@ -508,15 +535,16 @@ function KStart() {
       // 自定义图片
       if (data.user_set.background == 4) {
         img.src = await methods.getCustomWallpaper();
-      }
-      else {
+      } else {
         img.src = url;
       }
 
       // 深色背景增加深色模式
       img.onload = () => {
         obj.main.bg.classList.add(`type-${data.user_set.background}`);
-        obj.main.bg.style.background = `url(${img.src}) ${data.background_type[data.user_set.background].set}`;
+        obj.main.bg.style.background = `url(${img.src}) ${
+          data.background_type[data.user_set.background].set
+        }`;
         obj.main.bg.classList.add("active");
 
         const canvas = document.createElement("canvas");
@@ -528,8 +556,7 @@ function KStart() {
 
         if (imgData[0] <= 180 || (imgData[1] <= 180) | (imgData[2] <= 180)) {
           document.body.classList.add("dark");
-        }
-        else {
+        } else {
           document.body.classList.remove("dark");
         }
       };
@@ -569,15 +596,20 @@ function KStart() {
       // prefers-reduced-motion 事件监听
       window.matchMedia("(prefers-reduced-motion: reduce)").addListener((e) => {
         // 当 data.user_set.low_animate 不为 0(自适应) 时，不进行处理
-        if(data.user_set.low_animate !== 0) return;
+        if (data.user_set.low_animate !== 0) return;
 
         if (e.matches) {
           document.body.classList.add("low-animate");
-          ks.notice("检测到减弱动画模式，已为你减弱动画效果", { color: "green", time: 2000 });
-        }
-        else {
+          ks.notice("检测到减弱动画模式，已为你减弱动画效果", {
+            color: "green",
+            time: 2000,
+          });
+        } else {
           document.body.classList.remove("low-animate");
-          ks.notice("减弱动画模式关闭，已启用完整动画效果", { color: "green", time: 2000 });
+          ks.notice("减弱动画模式关闭，已启用完整动画效果", {
+            color: "green",
+            time: 2000,
+          });
         }
       });
     },
@@ -586,8 +618,7 @@ function KStart() {
       // 兼容性处理：对旧配置中 boolean 类型的配置项进行转换
       if (data.user_set.low_animate === true) {
         data.user_set.low_animate = 1;
-      }
-      else if (data.user_set.low_animate === false) {
+      } else if (data.user_set.low_animate === false) {
         data.user_set.low_animate = 2;
       }
 
@@ -616,11 +647,12 @@ function KStart() {
       }
       if (name === "background") {
         modifys.initBackground();
-      }
-      else if (name === "search") {
-        ks.notice("默认搜索引擎已修改，刷新后生效", { color: "green", time: 3000 });
-      }
-      else if (name === "low_animate") {
+      } else if (name === "search") {
+        ks.notice("默认搜索引擎已修改，刷新后生效", {
+          color: "green",
+          time: 3000,
+        });
+      } else if (name === "low_animate") {
         modifys.initLowAnimate();
       }
     },
@@ -638,7 +670,7 @@ function KStart() {
         const el = ks.create("div", {
           class: "item",
           html: `<i class="iconfont icon-${item.icon}"></i>${item.name}`,
-          parent: obj.main.search
+          parent: obj.main.search,
         });
 
         el.onclick = () => modifys.changeSearch(key);
@@ -652,7 +684,8 @@ function KStart() {
 
       // 关闭面板
       obj.window.wrap.onclick = (e) => {
-        const isCloseBtn = e.target.nodeName === "BUTTON" && e.target.dataset.type === "close";
+        const isCloseBtn =
+          e.target.nodeName === "BUTTON" && e.target.dataset.type === "close";
         const isWindow = e.target == obj.window.wrap;
 
         (isWindow || isCloseBtn) && methods.closeWindow();
@@ -678,8 +711,7 @@ function KStart() {
 
       if (layout === 0) {
         obj.main.self.classList.add("layout-default");
-      }
-      else if (layout === 1) {
+      } else if (layout === 1) {
         obj.main.self.classList.add("layout-simple");
       }
     },
@@ -698,10 +730,11 @@ function KStart() {
       // 用户选中的预设站点
       if (sites && Array.isArray(sites)) {
         sites.forEach((item) => {
-          obj.main.sites.appendChild(methods.createNaviItem(data.sites[item], item));
+          obj.main.sites.appendChild(
+            methods.createNaviItem(data.sites[item], item)
+          );
         });
-      }
-      else {
+      } else {
         console.error("这个一般不会触发吧？");
       }
     },
@@ -727,7 +760,8 @@ function KStart() {
       });
 
       // 如果自定义背景被修改
-      obj.settings.background_input.onchange = modifys.customWallpaperInputChange;
+      obj.settings.background_input.onchange =
+        modifys.customWallpaperInputChange;
     },
 
     // 初始化设置表单项
@@ -745,18 +779,30 @@ function KStart() {
           return;
         }
 
-        let type, i = item;
+        let type,
+          i = item;
 
         switch (obj.settings[item].type) {
-          case "text": type = "value"; break;
-          case "checkbox": type = "checked"; break;
-          case "select-one": type = "value"; break;
+          case "text":
+            type = "value";
+            break;
+          case "checkbox":
+            type = "checked";
+            break;
+          case "select-one":
+            type = "value";
+            break;
           // ! 暂时没有使用
-          case "select-multiple": type = "options"; break;
+          case "select-multiple":
+            type = "options";
+            break;
         }
 
         // 是下拉框，遍历生成（只有 Select 才会有 key 这个东西）
-        if (obj.settings[item].type.indexOf("select") === 0 && obj.settings[item].dataset.key) {
+        if (
+          obj.settings[item].type.indexOf("select") === 0 &&
+          obj.settings[item].dataset.key
+        ) {
           data[obj.settings[item].dataset.key].forEach((sitem, key) => {
             ks.create("option", {
               text: sitem.name,
@@ -787,7 +833,10 @@ function KStart() {
 
           obj.settings[item].onchange = () => {
             // 读取表单
-            data.user_set[i] = methods.parseValue(type, methods.getMulSelectValue(obj.settings[i]));
+            data.user_set[i] = methods.parseValue(
+              type,
+              methods.getMulSelectValue(obj.settings[i])
+            );
 
             methods.setStorage();
             modifys.onSettingChange(i);
@@ -825,14 +874,12 @@ function KStart() {
 
         item.onclick = modifys.siteItemButton;
       });
-    }
+    },
   };
 
   // 异步数据请求
   const services = {
-    getSiteList: () => (
-      fetch("site.json").then((res) => res.json())
-    ),
+    getSiteList: () => fetch("site.json").then((res) => res.json()),
     getUserSettings: (user) => {
       const url = `https://dreamer-paul.github.io/KStart-Sites/${user}.json`;
 
@@ -843,47 +890,56 @@ function KStart() {
   // 从这里开始初始化
   modifys.initBody();
 
-  services.getSiteList().then((res) => {
-    data.sites = res;
-  }).then(() => {
-    const user = methods.getUser();
+  services
+    .getSiteList()
+    .then((res) => {
+      data.sites = res;
+    })
+    .then(() => {
+      const user = methods.getUser();
 
-    // 读取在线或本地数据
-    if (user) {
-      return services.getUserSettings(user).then((res) => {
-        data.env = "web";
+      // 读取在线或本地数据
+      if (user) {
+        return services
+          .getUserSettings(user)
+          .then((res) => {
+            data.env = "web";
 
-        return res;
-      }).catch((err) => {
-        data.env = "local";
-        ks.notice("获取数据出错啦", { color: "red" });
+            return res;
+          })
+          .catch((err) => {
+            data.env = "local";
+            ks.notice("获取数据出错啦", { color: "red" });
 
-        return methods.getStorage();
-      });
-    }
+            return methods.getStorage();
+          });
+      }
 
-    console.warn("Local mode");
-    data.env = "local";
+      console.warn("Local mode");
+      data.env = "local";
 
-    return methods.getStorage();
-  }).then((userData) => {
-    userData && methods.setUserSettings(userData);
-  }).then(methods.initDB).then(() => {
-    modifys.initLayout();
-    modifys.initNavi();
-    modifys.initBackground();
-    modifys.initMediaQueryListener();
-    modifys.initLowAnimate();
+      return methods.getStorage();
+    })
+    .then((userData) => {
+      userData && methods.setUserSettings(userData);
+    })
+    .then(methods.initDB)
+    .then(() => {
+      modifys.initLayout();
+      modifys.initNavi();
+      modifys.initBackground();
+      modifys.initMediaQueryListener();
+      modifys.initLowAnimate();
 
-    data.env === "web" && modifys.hideModifiedButton();
+      data.env === "web" && modifys.hideModifiedButton();
 
-    data.user_set.auto_focus && modifys.focusSearchInput();
+      data.user_set.auto_focus && modifys.focusSearchInput();
 
-    modifys.changeSearch(data.user_set.search);
-    modifys.initSettingBackground();
-    modifys.initSettingForm();
-    modifys.initDrawerItems();
-  });
+      modifys.changeSearch(data.user_set.search);
+      modifys.initSettingBackground();
+      modifys.initSettingForm();
+      modifys.initDrawerItems();
+    });
 }
 
 KStart();
